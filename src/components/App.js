@@ -44,64 +44,83 @@ const toursData = [
 ];
 
 function App() {
-  const [tours, setTours] = useState(toursData);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isBtnClick, setIsBtnClick] = useState(false);
+  const [dataArr, setDataArr] = useState(toursData);
+  const [buttons, setButtons] = useState(toursData.map(() => 0));
+  const [texts, setTexts] = useState(
+    toursData.map((data) => setInfo(data.info))
+  );
 
-  // to handle the showMore button
-  const handleShowMore = (id) => {
-    const updatedTours = tours.map((tour) => {
-      if (tour.id === id) {
-        return { ...tour, showMore: !tour.showMore };
-      }
-      return tour;
-    });
-    setTours(updatedTours);
-  };
+  function setInfo(str, qty = 0) {
+    if (qty === 200) return str;
 
-  // to delete the tour from the data
-  const handleDeleteTour = (id) => {
-    const updatedTours = tours.filter((tour) => tour.id !== id);
-    setTours(updatedTours);
-  };
+    let newStr = "";
+    for (let i = 0; i < 200; i++) newStr += str[i];
+    return newStr;
+  }
 
-  const handleRefresh = () => {
-    setTours(toursData);
-  };
+  function handle(info, index, qty) {
+    const newButtons = [...buttons];
+    newButtons[index] = qty;
+    setButtons(newButtons);
+    texts[index] = setInfo(info, qty);
+  }
+
+  function handleDelete(idx) {
+    setDataArr(dataArr.filter((item, index) => idx !== index));
+    setButtons(buttons.filter((item, index) => index !== idx));
+    setTexts(texts.filter((item, index) => index !== idx));
+  }
 
   return (
     <main id="main">
       <h1 className="title">Tours</h1>
-      {isLoading ? (
-        <p className="loading">Loading...</p>
-      ) : tours.length === 0 ? (
-        <div>
-          <p>No more tours</p>
-          <button className="btn" onClick={handleRefresh}>
-            Refresh
-          </button>
-        </div>
+      {isBtnClick ? (
+        ""
       ) : (
-        <div>
-          {tours.map((tour) => (
-            <div key={tour.id} className="single-tour">
-              <img src={tour.image} alt={tour.name} />
-              <h2>{tour.name}</h2>
-              <p className="tour-info">
-                {tour.showMore
-                  ? tour.info
-                  : `${tour.info.substring(0, 200)}...`}
-                <button onClick={() => handleShowMore(tour.id)}>
-                  {tour.showMore ? "Show Less" : "Show More"}
+        <button onClick={() => setIsBtnClick(true)}> Show All Tours </button>
+      )}
+      <div className="tours">
+        {isBtnClick &&
+          (dataArr.length !== 0 ? (
+            dataArr.map((data, index) => (
+              <div className="single-tour">
+                <img src={data.image} alt="Image" />
+                <p> Id: {data.id} </p>
+                <p> Name: {data.name} </p>
+                <p className="tour-price"> Price: {data.price} </p>
+                <p className="tour-info"> Info: {texts[index]} </p>
+                {buttons[index] === 0 ? (
+                  <button onClick={() => handle(data.info, index, 200)}>
+                    {" "}
+                    Show More{" "}
+                  </button>
+                ) : (
+                  <button onClick={() => handle(data.info, index, 0)}>
+                    {" "}
+                    See Less{" "}
+                  </button>
+                )}
+                <button
+                  className="delete-btn"
+                  cl
+                  onClick={() => handleDelete(index)}
+                >
+                  {" "}
+                  Delete{" "}
                 </button>
-              </p>
-              <p className="tour-price">Price: ${tour.price}</p>
-              <button id="delete-btn" onClick={() => handleDeleteTour(tour.id)}>
-                Remove
+              </div>
+            ))
+          ) : (
+            <div className="empty-data">
+              <h2> No More Tours </h2>
+              <button className="btn" onClick={() => window.location.reload()}>
+                {" "}
+                Refresh{" "}
               </button>
             </div>
           ))}
-        </div>
-      )}
+      </div>
     </main>
   );
 }
